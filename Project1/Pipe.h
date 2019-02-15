@@ -7,8 +7,7 @@
 
 	Florian Markusse
 */
-
-namespace logger 
+namespace logger
 {
 
 	enum class PipeState
@@ -25,6 +24,20 @@ namespace logger
 		readAndWrite
 	};
 
+	enum class LogLevel : char
+	{
+		// White color font.
+		info = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED,
+		// Yellow/amber color font.
+		warn = FOREGROUND_GREEN | FOREGROUND_RED,
+		// Red color font.
+		error = FOREGROUND_RED,
+		// Green color font.
+		success = FOREGROUND_GREEN
+	};
+
+	// Need to know the size of the number of bytes that we have to write to the
+	// pipe.
 	struct BufferSize
 	{
 		const size_t value;
@@ -95,9 +108,9 @@ namespace logger
 		void close();
 		const std::string &getPipeName() const;
 		size_t read(Buffer buffer);
-		void write(const Buffer buffer);
+		void write(Buffer buffer);
 	};
 
-}
+} // namespace logger
 
 

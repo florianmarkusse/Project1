@@ -6,7 +6,6 @@
 
 	Florian Markusse
 */
-
 namespace logger
 {
 	// Mandatory prefix for all pipes.
@@ -14,7 +13,7 @@ namespace logger
 
 	/*
 		<Constructor>
-		Creates a Pipe instance 
+		Creates a Pipe instance
 
 		@param handle; The handle to the pipe.
 		@param pipeName; The name after the prefix for the pipe.
@@ -23,7 +22,7 @@ namespace logger
 		@return The created Pipe instance
 	*/
 	Pipe::Pipe(HANDLE handle, std::string pipeName, PipeState pipeState)
-		: m_handle { handle }, 
+		: m_handle { handle },
 		m_pipeName { std::move(pipeName) },
 		m_pipeState { pipeState } { }
 
@@ -62,7 +61,8 @@ namespace logger
 			return;
 		}
 
-		if (!ConnectNamedPipe(m_handle, nullptr)) {
+		if (!static_cast<bool>( ConnectNamedPipe(m_handle, nullptr) ) &&
+			( GetLastError() != ERROR_PIPE_CONNECTED )) {
 			CloseHandle(m_handle);
 			printf("ConnectNamedPipe failed (%d).\n", GetLastError());
 		}
@@ -89,8 +89,8 @@ namespace logger
 		@param other; The other Pipe instance.
 	*/
 	Pipe::Pipe(Pipe && other) noexcept
-		: m_handle { other.m_handle }, 
-		m_pipeName { other.m_pipeName }, 
+		: m_handle { other.m_handle },
+		m_pipeName { other.m_pipeName },
 		m_pipeState { std::move(other.m_pipeState) }
 	{
 		// "other" is no longer valid.
@@ -99,7 +99,7 @@ namespace logger
 
 	/*
 		<Move assignment operator>
-		Closes the pipe, moves the member variables of the "other" instance to 
+		Closes the pipe, moves the member variables of the "other" instance to
 		this instance and sets the "other" instance to an invalid process.
 		Afterwards, returns the current instance.
 
@@ -202,7 +202,7 @@ namespace logger
 				printf("Unable to open pipe\n");
 			}
 
-			if (!WaitNamedPipeA(pipeName.c_str(), 10000)) {
+			if (!static_cast<bool>( WaitNamedPipeA(pipeName.c_str(), 10000) )) {
 				printf("Unable to wait on pipe\n");
 			}
 
@@ -250,13 +250,14 @@ namespace logger
 		connect();
 
 		DWORD bytesRead;
-		if (!ReadFile(
+		if (!static_cast<bool>( ReadFile(
 			m_handle,
 			buffer.data,
 			buffer.size.value,
 			&bytesRead,
-			nullptr)) {
-				printf("ReadFile failed, could not read pipe\n");
+			nullptr) )) {
+			printf("ReadFile failed, could not read pipe\n");
+			ExitThread(0);
 		}
 
 		return bytesRead;
@@ -274,14 +275,14 @@ namespace logger
 		connect();
 
 		DWORD bytesWritten;
-		if (!WriteFile(
+		if (!static_cast<bool>( WriteFile(
 			m_handle,
 			buffer.data,
 			buffer.size.value,
 			&bytesWritten,
-			nullptr) || bytesWritten != buffer.size.value) {
-				printf("WriteFile failed, could not write to pipe\n");
+			nullptr) ) || bytesWritten != buffer.size.value) {
+			printf("WriteFile failed, could not write to pipe\n");
 		}
 	}
-}
+} // namespace logger
 
