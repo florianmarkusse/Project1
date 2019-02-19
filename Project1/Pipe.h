@@ -1,4 +1,6 @@
 #pragma once
+#include "IInterProcess.h"
+
 #include <windows.h>
 #include <string>
 
@@ -36,44 +38,7 @@ namespace logger
 		success = FOREGROUND_GREEN
 	};
 
-	// Need to know the size of the number of bytes that we have to write to the
-	// pipe.
-	struct BufferSize
-	{
-		const size_t value;
-
-		explicit BufferSize(const size_t value)
-			: value { value }
-		{
-		}
-	};
-
-	struct ReadBufferSize : public BufferSize
-	{
-		explicit ReadBufferSize(const size_t value)
-			: BufferSize { value }
-		{
-		}
-	};
-
-	struct WriteBufferSize : BufferSize
-	{
-		explicit WriteBufferSize(const size_t value)
-			: BufferSize { value }
-		{
-		}
-	};
-
-	struct Buffer
-	{
-		char *data;
-		BufferSize size;
-
-		Buffer(char *data, size_t size)
-			: data { data }, size { size } {}
-	};
-
-	class Pipe
+	class Pipe : public IInterProcess
 	{
 
 	private:
@@ -107,8 +72,8 @@ namespace logger
 
 		void close();
 		const std::string &getPipeName() const;
-		size_t read(Buffer buffer);
-		void write(Buffer buffer);
+		size_t read(Buffer buffer) override;
+		void write(Buffer buffer) override;
 	};
 
 } // namespace logger
